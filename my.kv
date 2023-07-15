@@ -1,0 +1,152 @@
+<PointsCalculationScreen>
+    AnchorLayout:
+        id: outer_centering_box
+        anchor_x: "center"
+        anchor_y: "center"
+
+        BoxLayout:
+            id: main_box
+            orientation: "vertical"
+            size_hint: .95, .98
+
+            BoxLayout:
+                id: header_box
+                orientation: "horizontal"
+                size_hint: 1, 0.15
+
+                AnchorLayout:
+                    id: spare_place_box
+                    anchor_x: "center"
+                    anchor_y: "center"
+
+                Label:
+                    id: header_text
+                    text: "∆ Подсчёт очков ∆"
+
+                AnchorLayout:
+                    id: rating_button_box
+                    anchor_x: "center"
+                    anchor_y: "center"
+
+            TabbedPanel:
+                id: players_tabbed_panel
+                do_default_tab: False
+
+                TabbedPanelItem:
+                    id: first_player_tab
+                    text: 'Игрок\n1'
+
+                    BoxLayout:
+                        id: tab_main_box
+                        orientation: "vertical"
+
+                        BoxLayout:
+                            id: first_inputs_box
+                            orientation: "horizontal"
+
+                            BoxLayout:
+                                id: player_name_box
+                                orientation: "vertical"
+
+                                Label:
+                                    id: player_name_text
+                                    text: "Имя:"
+
+                                AnchorLayout:
+                                    id: player_name_centring_box
+                                    anchor_x: "center"
+                                    anchor_y: "center"
+
+                                    TextInput:
+                                        id: player_name_input
+
+                            Button:
+                                id: clear_player_button
+                                text: "x"
+
+                        BoxLayout:
+                            id: second_inputs_box
+                            orientation: "vertical"
+
+                            BoxLayout:
+                                id: second_inputs_inner_box
+                                orientation: "horizontal"
+
+                                BoxLayout:
+                                    id: normal_points_box
+                                    orientation: "vertical"
+
+                                    Label:
+                                        id: normal_points_text
+                                        text: "Обычные очки:"
+
+                                    AnchorLayout:
+                                        id: normal_points_centring_box
+                                        anchor_x: "center"
+                                        anchor_y: "center"
+
+                                        TextInput:
+                                            id: normal_points_input
+                                            placeholder: "0"
+
+                                BoxLayout:
+                                    id: empire_cards_box
+                                    orientation: "vertical"
+
+                                    Label:
+                                        id: empire_cards_text
+                                        text: "Карта империи:"
+
+                                    AnchorLayout:
+                                        id: empire_cards_centring_box
+                                        anchor_x: "center"
+                                        anchor_y: "center"
+
+                                        DropDown:
+                                            id: empire_cards_dropdowm
+
+                            Label:
+                                id: normal_points_result_text
+                                text: "0"
+
+                        GridLayout:
+                            id: category_grid_box
+                            cols: 2
+
+                        Label:
+                            id: final_result_text
+                            text: "Результат: 0"
+
+                TabbedPanelItem:
+                    id: second_player_tab
+                    text: 'Игрок\n2'
+
+                TabbedPanelItem:
+                    id: third_player_tab
+                    text: 'Игрок\n3'
+
+                TabbedPanelItem:
+                    id: fourth_player_tab
+                    text: 'Игрок\n4'
+
+                TabbedPanelItem:
+                    id: fifth_player_tab
+                    text: 'Игрок\n5'
+
+            BoxLayout:
+                id: menu_buttons_box
+                orientation: "horizontal"
+                size_hint: 1, 0.1
+
+                Button:
+                    id: save_button
+                    text: "Сохранить"
+
+                Button:
+                    id: history_button
+                    text: "История"
+
+                Button:
+                    id: erase_button
+                    text: "Стереть"
+
