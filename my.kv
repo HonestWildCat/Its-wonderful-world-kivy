@@ -1,8 +1,11 @@
 <PointsCalculationScreen>
+    name: "PointsCalculationScreen"
+
     AnchorLayout:
         id: outer_centering_box
         anchor_x: "center"
         anchor_y: "center"
+        background_color: .5, .5, .1, 1
 
         BoxLayout:
             id: main_box
@@ -12,7 +15,7 @@
             BoxLayout:
                 id: header_box
                 orientation: "horizontal"
-                size_hint: 1, 0.15
+                size_hint: 1, 0.10
 
                 AnchorLayout:
                     id: spare_place_box
@@ -21,7 +24,9 @@
 
                 Label:
                     id: header_text
-                    text: "∆ Подсчёт очков ∆"
+                    text: "[b]∆ Подсчёт очков ∆[/b]"
+                    font_size: 25
+                    markup: True
 
                 AnchorLayout:
                     id: rating_button_box
@@ -43,6 +48,7 @@
                         BoxLayout:
                             id: first_inputs_box
                             orientation: "horizontal"
+                            size_hint: 1, 0.15
 
                             BoxLayout:
                                 id: player_name_box
@@ -59,14 +65,33 @@
 
                                     TextInput:
                                         id: player_name_input
+                                        halign: "center"
+                                        multiline: False
+                                        size_hint: .9, 1.1
+                                        font_size: 18
+                                        on_text: root.change_tab_name(self.text)
 
-                            Button:
-                                id: clear_player_button
-                                text: "x"
+                            AnchorLayout:
+                                id: clear_player_button_box
+                                anchor_x: "center"
+                                anchor_y: "bottom"
+                                size_hint: .2, 1
+
+                                Button:
+                                    id: clear_player_button
+                                    text: "x"
+                                    size_hint: .7, .7
+                                    font_size: 25
+                                    halign: "center"
+                                    valign: "top"
+                                    text_size: self.size
+                                    background_color: 1, .4, .4, 1
+                                    on_press: root.clear_player_info()
 
                         BoxLayout:
                             id: second_inputs_box
                             orientation: "vertical"
+                            size_hint: 1, 0.22
 
                             BoxLayout:
                                 id: second_inputs_inner_box
@@ -87,7 +112,12 @@
 
                                         TextInput:
                                             id: normal_points_input
-                                            placeholder: "0"
+                                            hint_text: "0"
+                                            halign: "center"
+                                            multiline: False
+                                            size_hint: .9, 1
+                                            font_size: 18
+                                            on_text: root.calculate_result()
 
                                 BoxLayout:
                                     id: empire_cards_box
@@ -108,6 +138,7 @@
                             Label:
                                 id: normal_points_result_text
                                 text: "0"
+                                size_hint: 1, 0.3
 
                         GridLayout:
                             id: category_grid_box
@@ -116,6 +147,11 @@
                         Label:
                             id: final_result_text
                             text: "Результат: 0"
+                            halign: "center"
+                            valign: "top"
+                            size_hint: 1, 0.1
+                            text_size: self.size
+                            font_size: 22
 
                 TabbedPanelItem:
                     id: second_player_tab
@@ -136,17 +172,162 @@
             BoxLayout:
                 id: menu_buttons_box
                 orientation: "horizontal"
-                size_hint: 1, 0.1
+                size_hint: 1, 0.07
 
                 Button:
                     id: save_button
                     text: "Сохранить"
+                    on_press: root.save_game_data()
+                    #background_color: .2, .2, .8, 1
 
                 Button:
                     id: history_button
                     text: "История"
+                    on_press: root.to_games_history_screen()
+                    #background_color: .8, .65, .2, 1
 
                 Button:
                     id: erase_button
                     text: "Стереть"
+                    #background_color: .7, .4, .4, 1
 
+
+<GamesHistoryScreen>
+    name: "GamesHistoryScreen"
+
+    AnchorLayout:
+        id: outer_centring_box
+        anchor_x: "center"
+        anchor_y: "center"
+
+        BoxLayout:
+            id: main_box
+            orientation: "vertical"
+            size_hint: .95, .98
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, .1
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    size_hint: .3, 1
+
+                    Button:
+                        id: back_button
+                        text: "<"
+                        on_press: root.to_points_calculation_screen()
+                        size_hint: .7, .8
+
+                Label:
+                    id: header_text
+                    text: "[b]История[/b]"
+                    font_size: 25
+                    markup: True
+                    halign: "center"
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    size_hint: .3, 1
+
+                    Button:
+                        id: to_players_rating_screen_button
+                        text: ">"
+                        on_press: root.to_players_rating_screen()
+                        size_hint: .7, .8
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, .1
+
+                FloatLayout:
+                    id: search_image_box
+                    size_hint: .1, .8
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+
+                    TextInput:
+                        id: search_input
+                        hint_text: ""
+                        halign: "center"
+                        multiline: False
+                        size_hint: .9, .7
+                        font_size: 18
+                        on_text: root.show_games_history()
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    size_hint: .5, 1
+
+                    TextInput:
+                        id: sorting_options
+                        hint_text: ""
+                        halign: "center"
+                        multiline: False
+                        size_hint: .9, .7
+                        font_size: 18
+                        on_text: root.show_games_history()
+
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+                size_hint: 1, .1
+
+                GridLayout:
+                    id: table_head
+                    cols: 4
+                    size_hint: .9, 1
+
+                    Label:
+                        text: "[b]№[/b]"
+                        size_hint: .4, 1
+                        font_size: dp(17)
+                        markup: True
+
+                    Label:
+                        text: "[b]Имя[/b]"
+                        size_hint: .6, 1
+                        font_size: dp(17)
+                        markup: True
+
+                    Label:
+                        text: "[b]Очки[/b]"
+                        size_hint: .5, 1
+                        font_size: dp(17)
+                        markup: True
+
+                    Label:
+                        text: "[b]Дата[/b]"
+                        size_hint: 1, 1
+                        font_size: dp(17)
+                        markup: True
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+
+                ScrollView:
+                    id: data_table_scroll_view
+                    do_scroll_x: False
+                    do_scroll_y: True
+
+                    GridLayout:
+                        cols: 1
+                        id: data_table_scroll_box
+                        size_hint_y:None
+                        height:self.minimum_height
+                        padding: dp(5)
+
+
+
+<PlayersRatingScreen>
+    name: "PlayersRatingScreen"
+
+    Button:
+        id: back_button
+        text: "Назад"
+        on_press: root.to_points_calculation_screen()
