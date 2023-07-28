@@ -1,0 +1,144 @@
+<GamesHistoryScreen>
+    name: "GamesHistoryScreen"
+
+    AnchorLayout:
+        id: outer_centring_box
+        anchor_x: "center"
+        anchor_y: "center"
+        canvas:
+            Color:
+                rgba: app.background_color
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BorderedBoxLayout:
+            id: main_box
+            orientation: "vertical"
+            size_hint: .95, .98
+
+            BorderedBoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, .1
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    size_hint: .3, 1
+
+                    Button:
+                        id: back_button
+                        background_normal: app.back_icon
+                        background_down:'img/left_arrow_black.png'
+                        border: 0, 0, 0, 0
+                        on_press: root.to_points_calculation_screen()
+                        size_hint: .63, .75
+
+                Label:
+                    id: header_text
+                    text: "[b]История[/b]"
+                    font_size: 25
+                    markup: True
+                    halign: "center"
+                    color: app.text_color
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    size_hint: .3, 1
+
+                    Button:
+                        id: to_players_rating_screen_button
+                        background_normal: app.rating_icon
+                        background_down:'img/rating_icon_black.png'
+                        border: 0, 0, 0, 0
+                        on_press: root.to_players_rating_screen()
+                        size_hint: .7, .7
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, .1
+
+                FloatLayout:
+                    id: search_image_box
+                    size_hint: .1, .8
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+
+                    TextInput:
+                        id: search_input
+                        hint_text: ""
+                        halign: "center"
+                        multiline: False
+                        size_hint: .9, .7
+                        font_size: 18
+                        on_text: root.show_games_history()
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    size_hint: .5, 1
+
+                    TextInput:
+                        id: sorting_options
+                        hint_text: ""
+                        halign: "center"
+                        multiline: False
+                        size_hint: .9, .7
+                        font_size: 18
+                        on_text: root.show_games_history()
+
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+                size_hint: 1, .1
+
+                GridLayout:
+                    id: table_head
+                    cols: 4
+                    size_hint: .9, 1
+
+                    Label:
+                        text: "[b]№[/b]"
+                        size_hint: .4, 1
+                        font_size: dp(17)
+                        markup: True
+                        color: app.text_color
+
+                    Label:
+                        text: "[b]Имя[/b]"
+                        size_hint: .6, 1
+                        font_size: dp(17)
+                        markup: True
+                        color: app.text_color
+
+                    Label:
+                        text: "[b]Очки[/b]"
+                        size_hint: .5, 1
+                        font_size: dp(17)
+                        markup: True
+                        color: app.text_color
+
+                    Label:
+                        text: "[b]Дата[/b]"
+                        size_hint: 1, 1
+                        font_size: dp(17)
+                        markup: True
+                        color: app.text_color
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+
+                ScrollView:
+                    id: data_table_scroll_view
+                    do_scroll_x: False
+                    do_scroll_y: True
+
+                    GridLayout:
+                        cols: 1
+                        id: data_table_scroll_box
+                        size_hint_y:None
+                        height:self.minimum_height
+                        padding: dp(5)
