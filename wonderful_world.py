@@ -5,21 +5,19 @@ import kivy
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.tabbedpanel import TabbedPanelItem
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
-# from kivy.uix.button import Button
-from kivy.graphics import Color, Rectangle
+from kivy.metrics import dp
+
+
 from kivy.lang import Builder
 Builder.load_file('points_calculation_screen.kv')
 Builder.load_file('players_rating_screen.kv')
 Builder.load_file('games_history_screen.kv')
-
-from kivy.metrics import dp
 
 kivy.require('2.0.0')
 
@@ -40,7 +38,7 @@ theme = "night"
 color_theme = {
     "night": {
         "bg_1": (0.15, 0.15, 0.15, 1),
-        "bg_2": (.3, .3, .3, 1),
+        "bg_2": (.35, .35, .35, 1),
         "text": (1, 1, 1, 1),
         "icon": "img/night.png",
         "rating_icon": "img/rating_icon_white.png",
@@ -120,8 +118,8 @@ class PointsCalculationScreen(Screen):
                 num2 = PlayerTab.number_inputs_list[i + 1].text
                 input_values_list.append(int(num1) if num1.isdecimal() else 0)
                 input_values_list.append(int(num2) + int(i > 8) if num2.isdecimal() else 0)
-                print(input_values_list)
-                print(tuple(input_values_list))
+                # print(input_values_list)
+                # print(tuple(input_values_list))
             return tuple(input_values_list)
 
         normal_points = PlayerTab.calculate_points_expression(PlayerTab.number_inputs_list[0])
@@ -164,85 +162,50 @@ class PointsCalculationScreen(Screen):
 
 
 class PlayerTab(AnchorLayout):
-    categories_names_list = ["discoveries", "money", "science", "transport", "economist", "general"]
-    number_inputs_list = []
-    results_text_list = []
-
     def __init__(self, **kwargs):
         super(PlayerTab, self).__init__(**kwargs)
+        self.categories_names_list = ["discoveries", "money", "science", "transport", "economist", "general"]
+        self.number_inputs_list = []
+        self.results_text_list = []
+        self.current_category = -1
         # self.build_category_blocks()
         self.build_dropdown()
-        print(self.children)
 
-    def print_children(self):
-        print(self.children[0].children)
-        print(self.ids)
+    def add_category_inputs(self, category_inputs_box):
+        if self.current_category > 3:
+            first_category_input, multiply_sign_text, second_category_input = category_inputs_box.children[0].children
+            multiply_sign_text.text = "x ("
+            multiply_sign_text.size_hint = (.5, .8)
+            multiply_sign_text.font_size = dp(18)
 
-    def build_category_blocks(self):
-        self.number_inputs_list.append(self.ids.normal_points_input)
-        self.results_text_list.append(self.ids.normal_points_result_text)
+            category_inputs_box.children[0].add_widget(Label(text=" + 1)",
+                                                             size_hint=(.5, .8),
+                                                             font_size=dp(18),
+                                                             color=MyApp().text_color))
 
-        category_grid_box = self.ids.category_grid_box
-        for i in range(6):
-            category_centring_box = AnchorLayout(anchor_x="center", anchor_y="center")
-            # with category_centring_box.canvas:
-            #     Color(MyApp().text_color)
-            #     Rectangle(pos=category_centring_box.pos, size=category_centring_box.size)
-            #
-            #     Color(MyApp().background_color)
-            #     Rectangle(pos=(category_centring_box.x + dp(1), category_centring_box.y + dp(1)),
-            #               size=(category_centring_box.width - dp(2), category_centring_box.height - dp(2)))
+    def return_category_image(self):
+        self.current_category += 1
+        return f"img/{self.categories_names_list[self.current_category]}.png"
 
-            category_grid_box.add_widget(category_centring_box)
-            category_main_box = BoxLayout(orientation='vertical', size_hint=[.9, .9])
-            category_centring_box.add_widget(category_main_box)
-
-            category_image_box = AnchorLayout(anchor_x="center", anchor_y="center")
-            category_main_box.add_widget(category_image_box)
-            category_image = Image(source=f'img/{self.categories_names_list[i]}.png')
-            category_image_box.add_widget(category_image)
-
-            category_inputs_box = BoxLayout(orientation='horizontal')
-            category_main_box.add_widget(category_inputs_box)
-            first_category_input = TextInput(hint_text="0", halign="center", multiline=False,
-                                             size_hint=[.8, .7], font_size=20)
-            category_inputs_box.add_widget(first_category_input)
-            self.number_inputs_list.append(first_category_input)
-            first_category_input.bind(text=self.calculate_result)
-
-            multiply_sign_text = Label(text="x", size_hint=[.5, .9], font_size=20)
-            category_inputs_box.add_widget(multiply_sign_text)
-
-            second_category_input = TextInput(hint_text="0", halign="center", multiline=False,
-                                              size_hint=[.8, .7], font_size=20)
-            category_inputs_box.add_widget(second_category_input)
-            self.number_inputs_list.append(second_category_input)
-            second_category_input.bind(text=self.calculate_result)
-
-            category_result_text = Label(text="0", size_hint=[1, .3])
-            category_main_box.add_widget(category_result_text)
-            self.results_text_list.append(category_result_text)
-
-            if i > 3:
-                multiply_sign_text.text = "x ("
-                multiply_sign_text.size_hint = [.6, .9]
-                category_inputs_box.add_widget(Label(text=" + 1)", size_hint=[.5, .9], font_size=20))
-                category_result_text.size_hint = [.8, .5]
-
-        self.results_text_list.append(self.ids.final_result_text)
+    def add_widget_to_list(self, list_name_string, widget):
+        if list_name_string == "number_inputs_list":
+            self.number_inputs_list.append(widget)
+        elif list_name_string == "results_text_list":
+            self.results_text_list.append(widget)
 
     def build_dropdown(self):
         pass
 
-    def calculate_result(self, *args, **kwargs):
-        print(args)
-        print(kwargs)
-        points = self.calculate_points_expression(self.number_inputs_list[0])
-        self.results_text_list[0].text = str(points)
-        for i in range(2, 14, 2):
-            num1 = self.calculate_points_expression(self.number_inputs_list[i - 1])
-            num2 = self.calculate_points_expression(self.number_inputs_list[i])
-            if i > 8:
+    def calculate_result(self):
+        # Normal points
+        points = self.calculate_points_expression(self.number_inputs_list[-1])
+        self.results_text_list[-2].text = str(points)
+
+        # Categories
+        for i in range(0, 12, 2):
+            num1 = self.calculate_points_expression(self.number_inputs_list[i])
+            num2 = self.calculate_points_expression(self.number_inputs_list[i + 1])
+            if i > 6:
                 self.results_text_list[i // 2].text = str(num1 * (num2 + 1))
                 points += num1 * (num2 + 1)
             else:
@@ -268,8 +231,11 @@ class PlayerTab(AnchorLayout):
         self.calculate_result()
 
     def change_tab_name(self, text):
-        print(PointsCalculationScreen.ids)
         PointsCalculationScreen.ids.first_player_tab.text = text
+
+
+class LastCategoryInputs(BoxLayout):
+    pass
 
 
 class GamesHistoryScreen(Screen):
@@ -306,7 +272,7 @@ class GamesHistoryScreen(Screen):
             data_table_box = GridLayout(cols=4, size_hint=[.9, 1])
             data_table_centring_box.add_widget(data_table_box)
 
-            def create_label(text, size_hint: tuple | list = (1, 1)):
+            def create_label(text, size_hint=(1, 1)):
                 label = Label(text=f"{text}", size_hint=size_hint)
                 # with label.canvas:
                 #     Color(rgba=themes_table_background_colors[theme])
