@@ -74,6 +74,8 @@ color_theme = {
         "pressed_icon": "img/.png"}
 }
 
+player_tab_counter = 1
+
 
 class MyApp(App):
     def __init__(self):
@@ -142,6 +144,18 @@ class PointsCalculationScreen(Screen):
         self.clear_player_info()
         print("saved...")
 
+    def change_tab_name(self, player_tab, text):
+        if player_tab == 1:
+            self.ids.first_player_tab.text = text
+        elif player_tab == 2:
+            self.ids.second_player_tab.text = text
+        elif player_tab == 3:
+            self.ids.third_player_tab.text = text
+        elif player_tab == 4:
+            self.ids.fourth_player_tab.text = text
+        else:
+            self.ids.fifth_player_tab.text = text
+
     def to_games_history_screen(self):
         self.manager.current = "GamesHistoryScreen"
         self.manager.transition.direction = "left"
@@ -162,8 +176,14 @@ class PointsCalculationScreen(Screen):
 
 
 class PlayerTab(AnchorLayout):
+
     def __init__(self, **kwargs):
         super(PlayerTab, self).__init__(**kwargs)
+
+        global player_tab_counter
+        self.current_player_tab = player_tab_counter
+        player_tab_counter += 1
+
         self.categories_names_list = ["discoveries", "money", "science", "transport", "economist", "general"]
         self.number_inputs_list = []
         self.results_text_list = []
@@ -229,13 +249,6 @@ class PlayerTab(AnchorLayout):
         self.ids.player_name_input.text = ""
         self.ids.first_player_tab.text = "Игрок\n1"
         self.calculate_result()
-
-    def change_tab_name(self, text):
-        PointsCalculationScreen.ids.first_player_tab.text = text
-
-
-class LastCategoryInputs(BoxLayout):
-    pass
 
 
 class GamesHistoryScreen(Screen):

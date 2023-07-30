@@ -172,7 +172,7 @@
                         multiline: False
                         size_hint: .9, 1.1
                         font_size: dp(18)
-                        on_text: root.change_tab_name(self.text)
+                        on_text: root.parent.parent.parent.parent.parent.change_tab_name(root.current_player_tab, self.text)
 
             AnchorLayout:
                 id: clear_player_button_box
