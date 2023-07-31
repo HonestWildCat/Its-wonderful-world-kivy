@@ -92,18 +92,47 @@ class MyApp(App):
         self.title = "It's a Wonderful World"
         self.icon = "img/icon_min.png"
 
-        screen_manager = ScreenManager()
-        screen_manager.add_widget(PointsCalculationScreen())
-        screen_manager.add_widget(GamesHistoryScreen())
-        screen_manager.add_widget(PlayersRatingScreen())
-        return screen_manager
+        self.screen_manager = ScreenManager()
+        self.screen_manager.add_widget(PointsCalculationScreen())
+        self.screen_manager.add_widget(GamesHistoryScreen())
+        self.screen_manager.add_widget(PlayersRatingScreen())
+        return self.screen_manager
 
 
 class PointsCalculationScreen(Screen):
     def __init__(self):
         super().__init__()
+        self.player_tabs_list = [self.ids.first_player_tab_box,
+                                 self.ids.second_player_tab_box,
+                                 self.ids.third_player_tab_box,
+                                 self.ids.fourth_player_tab_box,
+                                 self.ids.fifth_player_tab_box]
+        self.tabs_prefix = ["first", "second", "third", "fourth", "fifth"]
 
     def save_game_data(self):
+        def main():
+            no_tab_filled = True
+            curr_game_id = cur.execute("SELECT MAX(game_id) FROM games_history").fetchone()[0] + 1
+            for player_tab in self.player_tabs_list:
+                if check_fields_filling(player_tab):
+                    no_tab_filled = False
+
+                    current_tab = self.ids[f"{self.tabs_prefix[player_tab.current_player_tab - 1]}_player_tab"]
+                    player_name = current_tab.text.replace("\n", " ")
+                    score = int(player_tab.results_text_list[-1].text.split()[2])
+                    empire_card = 0
+
+                    normal_points_result = int(player_tab.results_text_list[-2].text)
+
+                    insert_values_to_database(curr_game_id, player_name, score, empire_card,
+                                              normal_points_result, player_tab.number_inputs_list)
+
+            self.clear_all_players_info()
+            print("No values" if no_tab_filled else "saved...")
+
+        def check_fields_filling(tab):
+            tab_score = int(tab.ids.final_result_text.text.split()[2])
+            return True if tab_score > 0 else False
 
         def get_formatted_datetime():
             def add_zero(num):
@@ -113,48 +142,42 @@ class PointsCalculationScreen(Screen):
             return f"{add_zero(curr_datetime.hour)}:{add_zero(curr_datetime.minute)} " \
                    f"{add_zero(curr_datetime.day)}-{add_zero(curr_datetime.month)}-{add_zero(curr_datetime.year)}"
 
-        def create_input_values_tuple():
-            input_values_list = []
-            for i in range(1, len(PlayerTab.number_inputs_list), 2):
-                num1 = PlayerTab.number_inputs_list[i].text
-                num2 = PlayerTab.number_inputs_list[i + 1].text
-                input_values_list.append(int(num1) if num1.isdecimal() else 0)
-                input_values_list.append(int(num2) + int(i > 8) if num2.isdecimal() else 0)
-                # print(input_values_list)
-                # print(tuple(input_values_list))
+        def create_input_values_tuple(normal_points, number_inputs_list):
+            input_values_list = [normal_points]
+            for i in range(0, len(number_inputs_list)-1):
+                num = number_inputs_list[i].text
+                if i in (9, 11):
+                    input_values_list.append(int(num) + 1 if num.isdecimal() else 0)
+                else:
+                    input_values_list.append(int(num) + 1 if num.isdecimal() else 0)
             return tuple(input_values_list)
 
-        normal_points = PlayerTab.calculate_points_expression(PlayerTab.number_inputs_list[0])
-        current_game_id = cur.execute("SELECT MAX(game_id) FROM games_history").fetchone()[0] + 1
+        def insert_values_to_database(game_id, player_name, score, empire_card, normal_points, number_inputs_list):
+            print(game_id, player_name, score, empire_card, get_formatted_datetime())
+            print(create_input_values_tuple(normal_points, number_inputs_list))
+            cur.execute("""INSERT INTO games_history (game_id, player_name, score, empire_card, date) 
+                           VALUES (?, ?, ?, ?, ?)""",
+                        (game_id, player_name, score, empire_card, get_formatted_datetime()))
 
-        cur.execute("""INSERT INTO games_history
-                   (game_id,player_name,score,empire_card,date,normal_points)
-                   VALUES (?, ?, ?, ?, ?, ?)""",
-                    (current_game_id, PlayerTab.ids.player_name_input.text,
-                     int(PlayerTab.results_text_list[-1].text.split(" ")[1]),
-                     None, get_formatted_datetime(), normal_points))
+            cur.execute("""INSERT INTO categories_multipliers 
+                               (normal_points,
+                               disc_1, disc_2, money_1, money_2, 
+                               sci_1, sci_2, transport_1, transport_2, 
+                               econ_1, econ_2, general_1, general_2) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        create_input_values_tuple(normal_points, number_inputs_list))
 
-        cur.execute("""INSERT INTO categories_multipliers 
-                   (disc_1, disc_2, money_1, money_2, 
-                   sci_1, sci_2, transport_1, transport_2, 
-                   econ_1, econ_2, general_1, general_2) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    create_input_values_tuple())
-        conn.commit()
-        self.clear_player_info()
-        print("saved...")
+            conn.commit()
+
+        main()
 
     def change_tab_name(self, player_tab, text):
-        if player_tab == 1:
-            self.ids.first_player_tab.text = text
-        elif player_tab == 2:
-            self.ids.second_player_tab.text = text
-        elif player_tab == 3:
-            self.ids.third_player_tab.text = text
-        elif player_tab == 4:
-            self.ids.fourth_player_tab.text = text
-        else:
-            self.ids.fifth_player_tab.text = text
+        current_tab_header = self.ids[f"{self.tabs_prefix[player_tab - 1]}_player_tab"]
+        current_tab_header.text = text if (not text.isspace() and text != "") else f"Игрок\n{player_tab}"
+
+    def clear_all_players_info(self):
+        for player_tab in self.player_tabs_list:
+            player_tab.clear_player_info()
 
     def to_games_history_screen(self):
         self.manager.current = "GamesHistoryScreen"
@@ -188,7 +211,7 @@ class PlayerTab(AnchorLayout):
         self.number_inputs_list = []
         self.results_text_list = []
         self.current_category = -1
-        # self.build_category_blocks()
+
         self.build_dropdown()
 
     def add_category_inputs(self, category_inputs_box):
@@ -231,7 +254,7 @@ class PlayerTab(AnchorLayout):
             else:
                 self.results_text_list[i // 2].text = str(num1 * num2)
                 points += num1 * num2
-        self.results_text_list[-1].text = f"Результат: {points}"
+        self.results_text_list[-1].text = f"[b] Результат: {points} [/b]"
 
     @staticmethod
     def calculate_points_expression(element):
@@ -247,7 +270,6 @@ class PlayerTab(AnchorLayout):
         for num_input in self.number_inputs_list:
             num_input.text = ""
         self.ids.player_name_input.text = ""
-        self.ids.first_player_tab.text = "Игрок\n1"
         self.calculate_result()
 
 

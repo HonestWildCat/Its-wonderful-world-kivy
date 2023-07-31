@@ -121,6 +121,7 @@
                     background_down: 'img/pressed.png'
                     id: erase_button
                     text: "Стереть"
+                    on_press: root.clear_all_players_info()
 
 
 <PlayerTab>
@@ -172,7 +173,8 @@
                         multiline: False
                         size_hint: .9, 1.1
                         font_size: dp(18)
-                        on_text: root.parent.parent.parent.parent.parent.change_tab_name(root.current_player_tab, self.text)
+                        hint_text: f"Игрок {root.current_player_tab}"
+                        on_text: app.screen_manager.children[0].change_tab_name(root.current_player_tab, self.text)
 
             AnchorLayout:
                 id: clear_player_button_box
@@ -261,7 +263,7 @@
 
         BorderedLabel:
             id: final_result_text
-            text: "[b]Результат: 0[/b]"
+            text: "[b] Результат: 0 [/b]"
             halign: "center"
             valign: "top"
             markup: True
