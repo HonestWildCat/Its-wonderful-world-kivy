@@ -88,11 +88,12 @@ class MyApp(App):
         self.close_icon = color_theme[theme]["close_icon"]
         self.back_icon = color_theme[theme]["back_icon"]
 
+        self.screen_manager = ScreenManager()
+
     def build(self):
         self.title = "It's a Wonderful World"
-        self.icon = "img/icon_min.png"
+        self.icon = "img/icon.png"
 
-        self.screen_manager = ScreenManager()
         self.screen_manager.add_widget(PointsCalculationScreen())
         self.screen_manager.add_widget(GamesHistoryScreen())
         self.screen_manager.add_widget(PlayersRatingScreen())
@@ -112,7 +113,8 @@ class PointsCalculationScreen(Screen):
     def save_game_data(self):
         def main():
             no_tab_filled = True
-            curr_game_id = cur.execute("SELECT MAX(game_id) FROM games_history").fetchone()[0] + 1
+            max_game_id_in_database = cur.execute("SELECT MAX(game_id) FROM games_history").fetchone()[0]
+            curr_game_id = max_game_id_in_database + 1 if max_game_id_in_database is not None else 0
             for player_tab in self.player_tabs_list:
                 if check_fields_filling(player_tab):
                     no_tab_filled = False
@@ -120,7 +122,7 @@ class PointsCalculationScreen(Screen):
                     current_tab = self.ids[f"{self.tabs_prefix[player_tab.current_player_tab - 1]}_player_tab"]
                     player_name = current_tab.text.replace("\n", " ")
                     score = int(player_tab.results_text_list[-1].text.split()[2])
-                    empire_card = 0
+                    empire_card = player_tab.empire_card
 
                     normal_points_result = int(player_tab.results_text_list[-2].text)
 
@@ -210,9 +212,13 @@ class PlayerTab(AnchorLayout):
         self.categories_names_list = ["discoveries", "money", "science", "transport", "economist", "general"]
         self.number_inputs_list = []
         self.results_text_list = []
+
         self.current_category = -1
 
-        self.build_dropdown()
+        self.empire_cards_list = ["Unknown", "Panafrican_union", "Noram_states",
+                                  "Asian_federation", "Aztec_empire", "European_republic",
+                                  "Side_B", "5_crystal"]
+        self.empire_card = 0
 
     def add_category_inputs(self, category_inputs_box):
         if self.current_category > 3:
@@ -236,8 +242,15 @@ class PlayerTab(AnchorLayout):
         elif list_name_string == "results_text_list":
             self.results_text_list.append(widget)
 
-    def build_dropdown(self):
+    def build_dropdown(self, empire_cards_dropdown):
+        print(empire_cards_dropdown)
         pass
+
+    def change_empire_card(self, empire_cards_select_button):
+        self.empire_card = self.empire_card + 1 if self.empire_card < len(self.empire_cards_list) - 1 else 0
+        empire_cards_select_button.background_normal = f"img/empire_cards/" \
+                                                       f"{self.empire_cards_list[self.empire_card]}.png"
+        print(self.empire_cards_list[self.empire_card])
 
     def calculate_result(self):
         # Normal points
@@ -294,9 +307,10 @@ class GamesHistoryScreen(Screen):
         data_table_scroll_box = self.ids.data_table_scroll_box
         data_table_scroll_box.clear_widgets()
 
-        # data_table_scroll_box.add_widget(BoxLayout())
         number_counter = 1
         for game_id in games_id_list:
+            data_table_scroll_box.add_widget(BoxLayout())
+
             players_data = cur.execute("""SELECT rowid, player_name, score, date 
                                           FROM games_history WHERE game_id = ? 
                                           ORDER BY score DESC;""", game_id).fetchall()

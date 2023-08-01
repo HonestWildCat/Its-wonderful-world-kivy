@@ -240,8 +240,17 @@
                         anchor_x: "center"
                         anchor_y: "center"
 
-                        DropDown:
-                            id: empire_cards_dropdowm
+                        Button:
+                            id: empire_cards_select_button
+                            size_hint: .9, 1
+                            background_normal: 'img/empire_cards/Unknown.png'
+                            background_down:'img/empire_cards/pressed_empire_card.png'
+                            border: 0, 0, 0, 0
+                            on_press: root.change_empire_card(self)
+
+                        #DropDown:
+                        #    id: empire_cards_dropdown
+                        #    on_parent: root.build_dropdown(self)
 
             Label:
                 id: normal_points_result_text
