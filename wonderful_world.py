@@ -6,9 +6,11 @@ from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
+from kivy.uix.image import Image
 from kivy.metrics import dp
 from kivy.graphics import Rectangle, Color
 
@@ -17,6 +19,7 @@ from kivy.lang import Builder
 Builder.load_file('points_calculation_screen.kv')
 Builder.load_file('players_rating_screen.kv')
 Builder.load_file('games_history_screen.kv')
+Builder.load_file('games_full_info_screen.kv')
 
 kivy.require('2.0.0')
 
@@ -126,6 +129,7 @@ class MyApp(App):
         self.screen_manager.add_widget(PointsCalculationScreen())
         self.screen_manager.add_widget(GamesHistoryScreen())
         self.screen_manager.add_widget(PlayersRatingScreen())
+        self.screen_manager.add_widget(GamesFullInfoScreen())
         return self.screen_manager
 
 
@@ -222,6 +226,8 @@ class PointsCalculationScreen(Screen):
     def to_players_rating_screen(self):
         self.manager.current = "PlayersRatingScreen"
         self.manager.transition.direction = "down"
+        players_rating_screen = self.manager.get_screen("PlayersRatingScreen")
+        players_rating_screen.show_players_rating()
 
     def change_color_theme(self):
         global theme
@@ -323,10 +329,8 @@ class PlayerTab(AnchorLayout):
 class GamesHistoryScreen(Screen):
     def __init__(self):
         super().__init__()
-        # self.show_games_history()
 
     def show_games_history(self, query=""):
-        print(query)
         query = "%" + query + "%"
         played_games_id_list = cur.execute("""SELECT DISTINCT game_id FROM games_history ORDER BY rowid DESC;""")
         self.build_table(played_games_id_list.fetchall(), searched_player_name=query)
@@ -366,8 +370,6 @@ class GamesHistoryScreen(Screen):
         number_counter = 1
         players_in_game = []
 
-        # data_table_scroll_box.add_widget(Button(background_normal='img/line_separator_white_wide.png',
-        #                                         background_down='img/line_separator_white_wide.png'))
         data_table_scroll_box.add_widget(Button(background_color=(0, 0, 0, 0)))
 
         for game_id in games_id_list:
@@ -420,9 +422,110 @@ class GamesHistoryScreen(Screen):
 
 
 class PlayersRatingScreen(Screen):
+    def __init__(self, **kwargs):
+        super(Screen, self).__init__(**kwargs)
+        self.empire_cards_list = ["Unknown", "Panafrican_union", "Noram_states",
+                                  "Asian_federation", "Aztec_empire", "European_republic",
+                                  "Side_B", "5_crystal"]
+
+    def show_players_rating(self):
+        best_players = self.get_first_5_players()
+        self.build_rank_table(best_players)
+
+    def get_first_5_players(self):
+        best_players_list = []
+        player_rank = 1
+        best_players = cur.execute("""SELECT game_id, player_name, score, empire_card, date FROM games_history
+                                      ORDER BY score DESC LIMIT 5;""").fetchall()
+        for player in best_players:
+            players_in_game = cur.execute("""SELECT COUNT(rowid) FROM games_history 
+                                             WHERE game_id = ?;""", (player[0],)).fetchone()
+            best_players_list.append((player_rank, player[1], player[2], self.empire_cards_list[player[3]],
+                                      players_in_game[0], player[4]))
+            player_rank += 1
+        return best_players_list
+
+    def build_rank_table(self, best_players):
+        table_main_box = self.ids.table_main_box
+        table_main_box.clear_widgets()
+
+        for player in best_players:
+            player_main_centring_box = AnchorLayout(anchor_x="center", anchor_y="center")
+            table_main_box.add_widget(player_main_centring_box)
+            player_main_box = BoxLayout(orientation="horizontal", size_hint=[.9, 1])
+            player_main_centring_box.add_widget(player_main_box)
+
+            player_rating = Label(text=str(player[0]), size_hint=[.15, 1])
+            player_main_box.add_widget(player_rating)
+
+            player_info_box = BoxLayout(orientation="vertical")
+            player_main_box.add_widget(player_info_box)
+
+            player_name_and_score = Label(text=f"{player[1]} - {player[2]}")
+            player_info_box.add_widget(player_name_and_score)
+
+            player_empire_card_and_players_box = BoxLayout(orientation="horizontal")
+            player_info_box.add_widget(player_empire_card_and_players_box)
+            player_empire_card_box = AnchorLayout(anchor_x="center", anchor_y="center")
+            player_empire_card_and_players_box.add_widget(player_empire_card_box)
+            empire_card_image = Image(source=f'img/empire_cards/{player[3]}.png')
+            player_empire_card_box.add_widget(empire_card_image)
+
+            player_players_count_box = AnchorLayout(anchor_x="center", anchor_y="center")
+            player_empire_card_and_players_box.add_widget(player_players_count_box)
+            players_count_image = Image(source=f'img/players.png')
+            player_players_count_box.add_widget(players_count_image)
+            players_count = Label(text=f"{player[4]}")
+            player_players_count_box.add_widget(players_count)
+
+            player_game_time = Label(text=f"{player[5]}")
+            player_info_box.add_widget(player_game_time)
+
+            right_place_holder = Label(size_hint=[.15, 1])
+            player_main_box.add_widget(right_place_holder)
+        print(best_players)
 
     def to_points_calculation_screen(self):
         self.manager.current = "PointsCalculationScreen"
+        self.manager.transition.direction = "up"
+
+    def to_games_full_info_screen(self):
+        self.manager.current = "GamesFullInfoScreen"
+        self.manager.transition.direction = "down"
+        games_full_info_screen = self.manager.get_screen("GamesFullInfoScreen")
+        games_full_info_screen.show_full_games_info()
+
+
+class GamesFullInfoScreen(Screen):
+    def show_full_games_info(self):
+        full_games_info = self.get_full_games_info()
+        self.build_table(full_games_info)
+
+    @staticmethod
+    def get_full_games_info():
+        return cur.execute("""SELECT game_id, player_name,empire_card, score,  
+                              normal_points, disc_1, disc_2, money_1, money_2, sci_1, sci_2, transport_1, transport_2,
+                              econ_1, econ_2, general_1, general_2, date 
+                              FROM games_history JOIN categories_multipliers 
+                              ON games_history.rowid = categories_multipliers.rowid""").fetchall()
+
+    def build_table(self, full_games_info):
+        data_table_scroll_box = self.ids.data_table_scroll_box
+        data_table_scroll_box.clear_widgets()
+        data_table_scroll_box.add_widget(Label())
+        data_table_scroll_box.add_widget(Label(text="     game_id, player_name,empire_card, score,"
+                                                    "normal_points, disc_1, disc_2, money_1, money_2, sci_1,"
+                                                    "sci_2, transport_1, transport_2,"
+                                                    "econ_2, general_1, general_2, date     "))
+        for player in full_games_info:
+            data_table_scroll_box.add_widget(Label(text=f"{player}"))
+
+    def to_points_calculation_screen(self):
+        self.manager.current = "PointsCalculationScreen"
+        self.manager.transition.direction = "up"
+
+    def to_players_rating_screen(self):
+        self.manager.current = "PlayersRatingScreen"
         self.manager.transition.direction = "up"
 
 

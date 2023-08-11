@@ -150,25 +150,6 @@
                         separator_color: 0, 0, 1
                         spacing: dp(30)
 
-                        canvas:
-                            Color:
-                                rgba: app.text_color
-                            Rectangle:
-                                pos: self.x + self.width - dp(1), self.y
-                                size: dp(1), self.height
-
-#                            Color:
-#                                rgba: app.text_color[0], app.text_color[1], app.text_color[2], 0.1
-#                            Rectangle:
-#                                pos: self.x, self.y
-#                                size: self.width, self.height
-
-#                            Color:
-#                                rgba: app.text_color[0], app.text_color[1], app.text_color[2], 0.1
-#                            Rectangle:
-#                                pos: self.x, self.y
-#                                size: self.width, 210
-
 <TableHeaderLabel@Label>
     font_size: dp(17)
     markup: True
@@ -217,13 +198,13 @@
             rgba: app.text_color[0], app.text_color[1], app.text_color[2], 0.3
         Rectangle:
             pos: self.x, self.y - dp(510)
-            size: self.width, self.height + dp(480)
+            size: self.width  - dp(2), self.height + dp(480)
 
         Color:
             rgba: app.background_color
         Rectangle:
             pos: self.x + dp(1), self.y - dp(510)
-            size: self.width - dp(1), self.height + dp(480)
+            size: self.width - dp(3), self.height + dp(480)
 
         # Table header lining
         Color:

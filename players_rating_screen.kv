@@ -19,7 +19,7 @@
 
             BorderedBoxLayout:
                 orientation: "horizontal"
-                size_hint: 1, .09
+                size_hint: 1, .095
 
                 AnchorLayout:
                     anchor_x: "center"
@@ -47,4 +47,22 @@
                     anchor_y: "center"
                     size_hint: .3, 1
 
-            BoxLayout
+            GridLayout:
+                id: table_main_box
+                cols: 1
+                spacing: dp(10)
+
+                Label:
+                    text: "-"
+
+            BorderedBoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, .09
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+
+                    BorderedButton:
+                        text: "Открыть базу данных"
+                        on_press: root.to_games_full_info_screen()

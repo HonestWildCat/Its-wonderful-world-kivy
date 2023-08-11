@@ -1,0 +1,68 @@
+<GamesFullInfoScreen>
+    name: "GamesFullInfoScreen"
+
+    AnchorLayout:
+        id: outer_centring_box
+        anchor_x: "center"
+        anchor_y: "center"
+        canvas:
+            Color:
+                rgba: app.background_color
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BorderedBoxLayout:
+            id: main_box
+            orientation: "vertical"
+            size_hint: .95, .98
+
+            BorderedBoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, .095
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    size_hint: .3, 1
+
+                    Button:
+                        id: to_players_rating_screen_button
+                        background_normal: app.rating_icon
+                        background_down:'img/rating_icon_black.png'
+                        border: 0, 0, 0, 0
+                        on_press: root.to_players_rating_screen()
+                        size_hint: .7, .7
+
+                Label:
+                    id: header_text
+                    text: "[b]База данных[/b]"
+                    font_size: dp(25)
+                    markup: True
+                    halign: "center"
+                    color: app.text_color
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "center"
+                    size_hint: .3, 1
+
+            AnchorLayout:
+                id: data_table_scroll_centring_box
+                anchor_x: "center"
+                anchor_y: "center"
+
+                ScrollView:
+                    id: data_table_scroll_view
+                    do_scroll_x: True
+                    do_scroll_y: True
+
+                    GridLayout:
+                        cols: 1
+                        id: data_table_scroll_box
+                        size_hint_x:None
+                        size_hint_y:None
+                        height: self.minimum_height
+                        width: 1000
+                        separator_color: 0, 0, 1
+                        spacing: dp(30)
