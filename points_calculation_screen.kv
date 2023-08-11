@@ -135,23 +135,23 @@
                 pos: self.pos
                 size: self.size
 
-        BorderedBoxLayout:
+        BoxLayout:
             id: first_inputs_box
             orientation: "horizontal"
             size_hint: 1, 0.15
 
             canvas:
                 Color:
-                    rgb: app.text_color
+                    rgba: app.text_color
                 Rectangle:
-                    pos: self.x, self.y - 80
-                    size: self.width, self.height * 2.5
+                    pos: self.pos
+                    size: self.size
 
                 Color:
-                    rgb: app.background_color
+                    rgba: app.background_color
                 Rectangle:
-                    pos: self.x + dp(1), self.y - 80 + dp(1)
-                    size: self.width - dp(2), self.height * 2.5 - dp(2)
+                    pos: self.x + dp(1), self.y + dp(1)
+                    size: self.width - dp(2), self.height - dp(1)
 
             BoxLayout:
                 id: player_name_box
@@ -197,6 +197,19 @@
             id: second_inputs_box
             orientation: "vertical"
             size_hint: 1, 0.22
+
+            canvas:
+                Color:
+                    rgba: app.text_color
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+                Color:
+                    rgba: app.background_color
+                Rectangle:
+                    pos: self.x + dp(1), self.y + dp(1)
+                    size: self.width - dp(2), self.height
 
             BoxLayout:
                 id: second_inputs_inner_box

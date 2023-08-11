@@ -5,15 +5,14 @@ import kivy
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.image import Image
 from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
 from kivy.metrics import dp
+from kivy.graphics import Rectangle, Color
 
-
+# Loading kv files
 from kivy.lang import Builder
 Builder.load_file('points_calculation_screen.kv')
 Builder.load_file('players_rating_screen.kv')
@@ -24,14 +23,41 @@ kivy.require('2.0.0')
 # Window size
 Window.softinput_mode = "below_target"
 if Window.width > Window.height:
-    # Window.size = (450, 800)
     Window.size = (370, 680)
 
 # App background color
 Window.clearcolor = (0, 0, 0, 1)
-conn = sqlite3.connect("test.db")
+
+# Connection to database || Creating database if not exist
+conn = sqlite3.connect("players_data.db")
 cur = conn.cursor()
 
+# Creating tables if not exist
+cur.execute("""CREATE TABLE IF NOT EXISTS games_history(
+               rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+               game_id INT,
+               player_name TEXT,
+               score INT,
+               empire_card INT,
+               date TEXT)""")
+
+cur.execute("""CREATE TABLE IF NOT EXISTS categories_multipliers(
+               rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+               normal_points INT,
+               disc_1 INT,
+               disc_2 INT,
+               money_1 INT,
+               money_2 INT,
+               sci_1 INT,
+               sci_2 INT,
+               transport_1 INT,
+               transport_2 INT,
+               econ_1 INT,
+               econ_2 INT,
+               general_1 INT,
+               general_2 INT)""")
+
+# Color themes
 # themes_list = ["night", "day", "evening", "blue"]
 theme = "night"
 
@@ -73,13 +99,14 @@ color_theme = {
         "back_icon": "img/left_arrow_white.png",
         "pressed_icon": "img/.png"}
 }
-
+# Needed to give each player tab its own id
 player_tab_counter = 1
 
 
 class MyApp(App):
     def __init__(self):
         super().__init__()
+        # Setting style/color of elements according to color theme
         self.theme_icon = color_theme[theme]["icon"]
         self.background_color = color_theme[theme]["bg_1"]
         self.background_pressed = color_theme[theme]["bg_2"]
@@ -91,9 +118,11 @@ class MyApp(App):
         self.screen_manager = ScreenManager()
 
     def build(self):
+        # Setting title and icon of the app
         self.title = "It's a Wonderful World"
         self.icon = "img/icon.png"
 
+        # Adding screens to screen manager
         self.screen_manager.add_widget(PointsCalculationScreen())
         self.screen_manager.add_widget(GamesHistoryScreen())
         self.screen_manager.add_widget(PlayersRatingScreen())
@@ -113,9 +142,12 @@ class PointsCalculationScreen(Screen):
     def save_game_data(self):
         def main():
             no_tab_filled = True
+
             max_game_id_in_database = cur.execute("SELECT MAX(game_id) FROM games_history").fetchone()[0]
             curr_game_id = max_game_id_in_database + 1 if max_game_id_in_database is not None else 0
+
             for player_tab in self.player_tabs_list:
+                # Preventing saving blank player tabs
                 if check_fields_filling(player_tab):
                     no_tab_filled = False
 
@@ -250,7 +282,7 @@ class PlayerTab(AnchorLayout):
         self.empire_card = self.empire_card + 1 if self.empire_card < len(self.empire_cards_list) - 1 else 0
         empire_cards_select_button.background_normal = f"img/empire_cards/" \
                                                        f"{self.empire_cards_list[self.empire_card]}.png"
-        print(self.empire_cards_list[self.empire_card])
+        # print(self.empire_cards_list[self.empire_card])
 
     def calculate_result(self):
         # Normal points
@@ -284,6 +316,8 @@ class PlayerTab(AnchorLayout):
             num_input.text = ""
         self.ids.player_name_input.text = ""
         self.calculate_result()
+        self.empire_card = -1
+        self.change_empire_card(self.ids.empire_cards_select_button)
 
 
 class GamesHistoryScreen(Screen):
@@ -291,57 +325,90 @@ class GamesHistoryScreen(Screen):
         super().__init__()
         # self.show_games_history()
 
-    def show_games_history(self):
+    def show_games_history(self, query=""):
+        print(query)
+        query = "%" + query + "%"
         played_games_id_list = cur.execute("""SELECT DISTINCT game_id FROM games_history ORDER BY rowid DESC;""")
-        self.build_table(played_games_id_list.fetchall())
+        self.build_table(played_games_id_list.fetchall(), searched_player_name=query)
 
-    #         label = Label(text=f"{row}")
-    #         # with label.canvas:
-    #         #     Color(0, 1, 0, 1)
-    #         #     Rectangle(pos=label.pos, size=label.size)
-    #         row_main_box.add_widget(label)
-    #         data_table_box.add_widget(row_main_box)
+    @staticmethod
+    def draw_table_horizontal_lines(data_table_scroll_box, players_in_games):
+        data_table_scroll_box.canvas.remove_group(u"table rows")
+        players_in_games.reverse()
 
-    def build_table(self, games_id_list):
+        line_height = dp(13)
+        row_height = dp(31.5)
+
+        lines_sum_height = line_height
+        row_sum_height = row_height
+
+        for game in players_in_games:
+            for player in range(game):
+                if player == game - 1:
+                    lines_sum_height += line_height
+                with data_table_scroll_box.canvas:
+                    Color(rgba=(MyApp().text_color[0], MyApp().text_color[1], MyApp().text_color[2], 0.1))
+                    Rectangle(pos=(data_table_scroll_box.x,
+                                   data_table_scroll_box.y + lines_sum_height + row_sum_height),
+                              size=(Window.width, dp(2)),
+                              group=u"table rows")
+                row_sum_height += row_height
+            lines_sum_height += line_height
+
+    def build_table(self, games_id_list, searched_player_name=""):
+        def create_label(text, size_hint=(1, 1)):
+            label = Label(text=f"{text}", size_hint=size_hint)
+            data_table_box.add_widget(label)
 
         data_table_scroll_box = self.ids.data_table_scroll_box
         data_table_scroll_box.clear_widgets()
 
         number_counter = 1
+        players_in_game = []
+
+        # data_table_scroll_box.add_widget(Button(background_normal='img/line_separator_white_wide.png',
+        #                                         background_down='img/line_separator_white_wide.png'))
+        data_table_scroll_box.add_widget(Button(background_color=(0, 0, 0, 0)))
+
         for game_id in games_id_list:
-            data_table_scroll_box.add_widget(BoxLayout())
-
+            game_id = game_id[0], searched_player_name
             players_data = cur.execute("""SELECT rowid, player_name, score, date 
-                                          FROM games_history WHERE game_id = ? 
+                                          FROM games_history WHERE game_id = ? AND player_name LIKE ?
                                           ORDER BY score DESC;""", game_id).fetchall()
-            print()
-            data_table_centring_box = AnchorLayout(anchor_x="center", anchor_y="center", size_hint_y=None)
-            data_table_scroll_box.add_widget(data_table_centring_box)
-
-            data_table_box = GridLayout(cols=4, size_hint=[.9, 1])
-            data_table_centring_box.add_widget(data_table_box)
-
-            def create_label(text, size_hint=(1, 1)):
-                label = Label(text=f"{text}", size_hint=size_hint)
-                # with label.canvas:
-                #     Color(rgba=themes_table_background_colors[theme])
-                #     Rectangle(pos=label.pos, size=label.size)
-                data_table_box.add_widget(label)
 
             for player_data in players_data:
-                print(player_data)
+
+                data_table_box = GridLayout(cols=5, size_hint=[.9, 1])
+                data_table_scroll_box.add_widget(data_table_box)
+
                 create_label(number_counter, [.3, 1])
                 create_label(player_data[1], [.7, 1])
-                create_label(player_data[2], [.5, 1])
-                create_label(player_data[3])
+                create_label(player_data[2], [.35, 1])
+                create_label(player_data[3], [.85, 1])
 
-                number_counter += 1
-
-                # delete_button_box = AnchorLayout(anchor_x="center", anchor_y="center", size_hint=[.1, 1])
+                # delete_button_box = AnchorLayout(anchor_x="left", anchor_y="center", size_hint=[.1, 1])
                 # data_table_box.add_widget(delete_button_box)
-                # delete_button = Button(text="x", size_hint=[dp(1), .5])
+                # delete_button = Button(text="x", size_hint=[.2, .3])
                 # delete_button.bind(on_press=self.delete_player_game_info)
                 # delete_button_box.add_widget(delete_button)
+
+                number_counter += 1
+            players_in_game.append(len(players_data))
+
+            if players_data:
+                data_table_scroll_box.add_widget(Button(background_normal='img/line_separator_white.png',
+                                                        background_down='img/line_separator_white.png'))
+
+        self.draw_table_horizontal_lines(data_table_scroll_box, players_in_game)
+
+    def color_table_rows(self):
+        for row in self.ids.data_table_scroll_box.children:
+            with row.canvas:
+                Color(rgba=(0, .5, .7, 1))
+                Rectangle(pos=row.pos, size=row.size)
+
+    def delete_player_game_info(self):
+        print("delete_player_game_info")
 
     def to_points_calculation_screen(self):
         self.manager.current = "PointsCalculationScreen"
@@ -361,3 +428,6 @@ class PlayersRatingScreen(Screen):
 
 if __name__ == '__main__':
     MyApp().run()
+
+# Close connection with database
+conn.close()

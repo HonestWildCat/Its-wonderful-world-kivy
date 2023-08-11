@@ -69,24 +69,24 @@
 
                     TextInput:
                         id: search_input
-                        hint_text: ""
+                        hint_text: "Поиск по имени"
                         halign: "center"
                         multiline: False
                         size_hint: .9, .7
                         font_size: 18
-                        on_text: root.show_games_history()
+                        on_text: root.show_games_history(self.text)
 
                 AnchorLayout:
                     anchor_x: "center"
                     anchor_y: "center"
                     size_hint: .5, 1
 
-                    TextInput:
+                    Button:
                         id: sorting_options
-                        hint_text: ""
+                        text: ""
                         halign: "center"
                         multiline: False
-                        size_hint: .9, .7
+                        size_hint: .6, .7
                         font_size: 18
                         on_text: root.show_games_history()
 
@@ -94,41 +94,46 @@
                 anchor_x: "center"
                 anchor_y: "center"
                 size_hint: 1, .1
+                canvas:
+                    Color:
+                        rgba: app.text_color
+                    Rectangle:
+                        pos: self.x, self.y
+                        size: self.width, self.height - dp(1)
+
+                    Color:
+                        rgba: app.background_color
+                    Rectangle:
+                        pos: self.x + dp(1), self.y + dp(2)
+                        size: self.width - dp(2), self.height - dp(0)
 
                 GridLayout:
                     id: table_head
                     cols: 4
-                    size_hint: .9, 1
+                    size_hint: 1, 1
 
                     Label:
                         text: "[b]№[/b]"
-                        size_hint: .4, 1
+                        size_hint: .3, 1
                         font_size: dp(17)
                         markup: True
                         color: app.text_color
 
-                    Label:
+
+                    TableHeaderLabel:
                         text: "[b]Имя[/b]"
-                        size_hint: .6, 1
-                        font_size: dp(17)
-                        markup: True
-                        color: app.text_color
+                        size_hint: .7, 1
 
-                    Label:
+                    TableHeaderLabel:
                         text: "[b]Очки[/b]"
-                        size_hint: .5, 1
-                        font_size: dp(17)
-                        markup: True
-                        color: app.text_color
+                        size_hint: .35, 1
 
-                    Label:
+                    TableHeaderEndLabel:
                         text: "[b]Дата[/b]"
-                        size_hint: 1, 1
-                        font_size: dp(17)
-                        markup: True
-                        color: app.text_color
+                        size_hint: .85, 1
 
             AnchorLayout:
+                id: data_table_scroll_centring_box
                 anchor_x: "center"
                 anchor_y: "center"
 
@@ -141,5 +146,102 @@
                         cols: 1
                         id: data_table_scroll_box
                         size_hint_y:None
-                        height:self.minimum_height
-                        padding: dp(5)
+                        height: self.minimum_height
+                        separator_color: 0, 0, 1
+                        spacing: dp(30)
+
+                        canvas:
+                            Color:
+                                rgba: app.text_color
+                            Rectangle:
+                                pos: self.x + self.width - dp(1), self.y
+                                size: dp(1), self.height
+
+#                            Color:
+#                                rgba: app.text_color[0], app.text_color[1], app.text_color[2], 0.1
+#                            Rectangle:
+#                                pos: self.x, self.y
+#                                size: self.width, self.height
+
+#                            Color:
+#                                rgba: app.text_color[0], app.text_color[1], app.text_color[2], 0.1
+#                            Rectangle:
+#                                pos: self.x, self.y
+#                                size: self.width, 210
+
+<TableHeaderLabel@Label>
+    font_size: dp(17)
+    markup: True
+    canvas:
+        # Table columns lining
+        Color:
+            rgba: app.text_color[0], app.text_color[1], app.text_color[2], 0.3
+        Rectangle:
+            pos: self.x, self.y - dp(510)
+            size: self.width, self.height + dp(480)
+
+        Color:
+            rgba: app.background_color
+        Rectangle:
+            pos: self.x + dp(1), self.y - dp(510)
+            size: self.width - dp(1), self.height + dp(480)
+
+        # Table header lining
+        Color:
+            rgba: app.text_color
+        Rectangle:
+            pos: self.x, self.y
+            size: self.width, self.height - dp(15)
+
+        Color:
+            rgba: app.background_color
+        Rectangle:
+            pos: self.x + dp(3), self.y + dp(2)
+            size: self.width - dp(3), self.height - dp(16)
+
+        # Text color
+        Color:
+            rgba: app.text_color
+        Rectangle:
+            texture: self.texture
+            pos: int(self.center_x - self.texture_size[0] / 2), int(self.center_y - self.texture_size[1] / 2)
+            size: self.texture_size
+
+
+<TableHeaderEndLabel@Label>
+    font_size: dp(17)
+    markup: True
+    canvas:
+        # Table columns lining
+        Color:
+            rgba: app.text_color[0], app.text_color[1], app.text_color[2], 0.3
+        Rectangle:
+            pos: self.x, self.y - dp(510)
+            size: self.width, self.height + dp(480)
+
+        Color:
+            rgba: app.background_color
+        Rectangle:
+            pos: self.x + dp(1), self.y - dp(510)
+            size: self.width - dp(1), self.height + dp(480)
+
+        # Table header lining
+        Color:
+            rgba: app.text_color
+        Rectangle:
+            pos: self.x, self.y
+            size: self.width, self.height - dp(15)
+
+        Color:
+            rgba: app.background_color
+        Rectangle:
+            pos: self.x + dp(3), self.y + dp(2)
+            size: self.width - dp(4), self.height - dp(16)
+
+        # Text color
+        Color:
+            rgba: app.text_color
+        Rectangle:
+            texture: self.texture
+            pos: int(self.center_x - self.texture_size[0] / 2), int(self.center_y - self.texture_size[1] / 2)
+            size: self.texture_size
