@@ -19,7 +19,7 @@
 
             BorderedBoxLayout:
                 orientation: "horizontal"
-                size_hint: 1, .095
+                size_hint: 1, .09
 
                 AnchorLayout:
                     anchor_x: "center"
@@ -52,17 +52,5 @@
                 anchor_x: "center"
                 anchor_y: "center"
 
-                ScrollView:
-                    id: data_table_scroll_view
-                    do_scroll_x: True
-                    do_scroll_y: True
-
-                    GridLayout:
-                        cols: 1
-                        id: data_table_scroll_box
-                        size_hint_x:None
-                        size_hint_y:None
-                        height: self.minimum_height
-                        width: 1000
-                        separator_color: 0, 0, 1
-                        spacing: dp(30)
+                TextInput:
+                    id: text_to_copy
